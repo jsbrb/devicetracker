@@ -1,9 +1,11 @@
 package com.example.devicetracker.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
+@Data
 @Entity
 public class User {
     @Id

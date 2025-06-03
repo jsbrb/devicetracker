@@ -28,11 +28,18 @@ public class UserController {
 
     //Update
     @PutMapping("/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User updateUser){
+        return userRepository.findById(id).map(user -> {
+            user.setName(updateUser.getName());
+            user.setEmail(updateUser.getEmail());
+            return userRepository.save(user);
+        }).orElse(null);
+    }
 
 
     //Delete
     @DeleteMapping("/{id}")
-    public void delete (Long id){
+    public void delete (@PathVariable Long id){
         userRepository.deleteById(id);
     }
 }
