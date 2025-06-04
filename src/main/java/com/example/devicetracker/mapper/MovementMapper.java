@@ -5,6 +5,9 @@ import com.example.devicetracker.model.Device;
 import com.example.devicetracker.model.Movement;
 import com.example.devicetracker.model.User;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class MovementMapper {
 
     //Convierte de DTO a Entidad
@@ -29,5 +32,12 @@ public class MovementMapper {
         dto.setUserId(movement.getUser() != null ? movement.getUser().getId() : null);
         dto.setDeviceId(movement.getDevice() != null ? movement.getDevice().getId() : null);
         return dto;
+    }
+
+    // Convertir lista de Entidades a lista de DTOs
+    public static List<MovementDto> toDtoList(List<Movement> movements) {
+        return movements.stream()
+                .map(MovementMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

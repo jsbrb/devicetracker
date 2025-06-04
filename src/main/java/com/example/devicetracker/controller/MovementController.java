@@ -1,10 +1,15 @@
 package com.example.devicetracker.controller;
 
+import com.example.devicetracker.dto.MovementDto;
+import com.example.devicetracker.mapper.MovementMapper;
+import com.example.devicetracker.model.Device;
 import com.example.devicetracker.model.Movement;
+import com.example.devicetracker.model.User;
 import com.example.devicetracker.repository.DeviceRepository;
 import com.example.devicetracker.repository.MovementRepository;
 import com.example.devicetracker.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,43 +27,59 @@ public class MovementController {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    //Create
+    //Crear movimiento
     @PostMapping
-    public Movement createMovement(@RequestBody Movement movement){
-        return movementRepository.save(movement);
+    public ResponseEntity<MovementDto> create(@RequestBody MovementDto dto) {
+        Optional<User> userOptional = userRepository.findById(dto.getUserId());
+        Optional<Device> deviceOptional = deviceRepository.findById(dto.getDeviceId());
+
+        if (userOptional.isEmpty() || deviceOptional.isEmpty()) {
+            return ResponseEntity.badRequest().build();    // 400 si user o device no existen
+        }
+        Movement movement = MovementMapper.toEntity(dto, userOptional.get(), deviceOptional.get());
+        Movement saved = movementRepository.save(movement);
+
+        return ResponseEntity.status(201).body(MovementMapper.toDto(saved));
+
     }
 
-    //Get all movements
-    @GetMapping
-    public List<Movement> getAllMovements(){
-        return movementRepository.findAll();
-    }
-
-    //Get a movement by ID
+    //Devolver movimiento por ID
     @GetMapping("/{id}")
-    public Movement getMovementById(@PathVariable Long id){
-        return movementRepository.findById(id).orElse(null);
+    public ResponseEntity<MovementDto> getByID(@PathVariable Long id){
+        return movementRepository.findById(id)
+                .map(m-> ResponseEntity.ok(MovementMapper.toDto(m)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     //Update Movement
     @PutMapping("/{id}")
-    public Movement updateMovement(@PathVariable Long id, @RequestBody Movement updatedMovement) {
-        Optional<Movement> optionalMovement = movementRepository.findById(id);
-        if (optionalMovement.isPresent()) {
-            Movement movement = optionalMovement.get();
-            movement.setLatitude(updatedMovement.getLatitude());
-            movement.setLongitude(updatedMovement.getLongitude());
-            movement.setTimestamp(updatedMovement.getTimestamp());
-            movement.setUser(updatedMovement.getUser());
-            movement.setDevice(updatedMovement.getDevice());
-            return movementRepository.save(movement);
-        }
-        return null;
+    public ResponseEntity<MovementDto> update(@PathVariable Long id, @RequestBody MovementDto dto) {
+        Optional<Movement> optMovement = movementRepository.findById(id);
+        if (optMovement.isEmpty()) return ResponseEntity.notFound().build();
+
+        Optional<User> userOpt = userRepository.findById(dto.getUserId());
+        Optional<Device> deviceOpt = deviceRepository.findById(dto.getDeviceId());
+        if (userOpt.isEmpty() || deviceOpt.isEmpty()) return ResponseEntity.badRequest().build();
+
+        Movement movement = optMovement.get();
+        movement.setLatitude(dto.getLatitude());
+        movement.setLongitude(dto.getLongitude());
+        movement.setTimestamp(dto.getTimestamp());
+        movement.setUser(userOpt.get());
+        movement.setDevice(deviceOpt.get());
+
+        Movement saved = movementRepository.save(movement);
+        return ResponseEntity.ok(MovementMapper.toDto(saved));
     }
 
-    //Delete Movement
+    // Delete
     @DeleteMapping("/{id}")
-    public void deleteMovement(@PathVariable Long id){
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (!movementRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
         movementRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
+
 }

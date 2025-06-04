@@ -3,6 +3,9 @@ package com.example.devicetracker.mapper;
 import com.example.devicetracker.dto.UserDto;
 import com.example.devicetracker.model.User;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class UserMapper {
 
     //Convertir DTO a Entidad
@@ -23,5 +26,12 @@ public class UserMapper {
         dto.setEmail(user.getEmail());
 
         return dto;
+    }
+
+    // Convertir lista de Entidades a lista de DTOs
+    public static List<UserDto> toDtoList(List<User> users) {
+        return users.stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

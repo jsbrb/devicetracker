@@ -1,8 +1,12 @@
 package com.example.devicetracker.controller;
 
+import com.example.devicetracker.dto.UserDto;
+import com.example.devicetracker.mapper.UserMapper;
 import com.example.devicetracker.model.User;
 import com.example.devicetracker.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,32 +18,47 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    //Create
+    // Crear usuario
     @PostMapping
-    public User create(@RequestBody User user){
-        return userRepository.save(user);
+    public ResponseEntity<UserDto> create(@RequestBody UserDto userDto) {
+        User user = UserMapper.toEntity(userDto);
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(savedUser)); // 201
     }
 
-    //Get
+    // Obtener todos los usuarios
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(UserMapper.toDtoList(users)); // 200
+    }
+
+    // Obtener un usuario por ID
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id){
-        return userRepository.findById(id).orElse(null);
+    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .map(user -> ResponseEntity.ok(UserMapper.toDto(user))) // 200
+                .orElse(ResponseEntity.notFound().build()); // 404
     }
 
-    //Update
+    // Actualizar usuario
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User updateUser){
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto updateUserDto) {
         return userRepository.findById(id).map(user -> {
-            user.setName(updateUser.getName());
-            user.setEmail(updateUser.getEmail());
-            return userRepository.save(user);
-        }).orElse(null);
+            user.setName(updateUserDto.getName());
+            user.setEmail(updateUserDto.getEmail());
+            User updatedUser = userRepository.save(user);
+            return ResponseEntity.ok(UserMapper.toDto(updatedUser)); // 200
+        }).orElse(ResponseEntity.notFound().build()); // 404
     }
 
-
-    //Delete
+    // Eliminar usuario
     @DeleteMapping("/{id}")
-    public void delete (@PathVariable Long id){
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build(); // 404
+        }
         userRepository.deleteById(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 }
