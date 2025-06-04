@@ -1,5 +1,6 @@
 package com.example.devicetracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class User {
     private String name;
     private String email;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("user")  // evita serializar el campo 'user' en cada 'Movement'
     private List<Movement> movements;
 }

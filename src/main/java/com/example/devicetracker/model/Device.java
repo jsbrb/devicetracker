@@ -1,5 +1,6 @@
 package com.example.devicetracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -14,5 +15,6 @@ public class Device {
     private String uniqueIdentifier;
 
     @OneToMany(mappedBy = "device")
+    @JsonIgnoreProperties("device")
     private List<Movement> movements;
 }
