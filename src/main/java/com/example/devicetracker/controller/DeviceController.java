@@ -58,4 +58,12 @@ public class DeviceController {
         return ResponseEntity.ok(dtoList);
     }
 
+    // Obtener un dispositivo por su ID
+    @GetMapping("/{id}")
+    public ResponseEntity<DeviceDto> getDevice(@PathVariable Long id) {
+        return deviceRepository.findById(id)
+                .map(device -> ResponseEntity.ok(DeviceMapper.toDto(device)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }
