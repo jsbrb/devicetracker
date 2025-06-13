@@ -19,4 +19,9 @@ public class Device {
     @OneToMany(mappedBy = "device")
     @JsonIgnoreProperties("device")
     private List<Movement> movements;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties("devices")
+    private User user;
 }

@@ -33,7 +33,8 @@ public class MovementController {
         Optional<Device> deviceOptional = deviceRepository.findById(dto.getDeviceId());
 
         if (userOptional.isEmpty() || deviceOptional.isEmpty()) {
-            return ResponseEntity.badRequest().build();    // 400 si user o device no existen
+            // Si el usuario o el dispositivo no existen, devuelve un error 400 Bad Request
+            return ResponseEntity.badRequest().build();
         }
         Movement movement = MovementMapper.toEntity(dto, userOptional.get(), deviceOptional.get());
         Movement saved = movementRepository.save(movement);

@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 public class UserMapper {
 
     //Convertir DTO a Entidad
+    // Se utiliza para convertir un objeto UserDto en un objeto User
+    // que se puede almacenar en la base de datos.
     public static User toEntity (UserDto dto){
         User user = new User();
         user.setId(dto.getId());

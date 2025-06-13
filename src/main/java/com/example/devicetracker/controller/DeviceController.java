@@ -66,4 +66,24 @@ public class DeviceController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Actualizar dispositivo
+    @PutMapping("/{id}")
+    public ResponseEntity<DeviceDto> updateDevice(@PathVariable Long id, @RequestBody DeviceDto updateDeviceDto) {
+        return deviceRepository.findById(id).map(device -> {
+            device.setName(updateDeviceDto.getName());
+            device.setUniqueIdentifier(updateDeviceDto.getUniqueIdentifier());
+            Device updatedDevice = deviceRepository.save(device);
+            return ResponseEntity.ok(DeviceMapper.toDto(updatedDevice)); // 200 OK
+        }).orElse(ResponseEntity.notFound().build()); // 404 Not Found
+    }
+
+    // Eliminar dispositivo
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (!deviceRepository.existsById(id)) {
+            return ResponseEntity.notFound().build(); // 404 Not Found
+        }
+        deviceRepository.deleteById(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
 }
